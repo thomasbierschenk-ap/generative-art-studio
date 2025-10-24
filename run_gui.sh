@@ -3,4 +3,4 @@
 
 cd "$(dirname "$0")"
 export PYTHONPATH="${PWD}/src:${PYTHONPATH}"
-python3 src/main.py "$@"
+/usr/bin/python3 src/main.py "$@"

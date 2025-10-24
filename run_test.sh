@@ -3,4 +3,4 @@
 
 cd "$(dirname "$0")"
 export PYTHONPATH="${PWD}/src:${PYTHONPATH}"
-python3 test_generator.py "$@"
+/usr/bin/python3 test_generator.py "$@"

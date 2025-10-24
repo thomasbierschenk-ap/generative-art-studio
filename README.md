@@ -51,21 +51,37 @@ python3 -m pip install --user Pillow svgwrite numpy
 
 ## Usage
 
-**Run the test generator (no GUI):**
+### Interactive Command-Line Interface (Recommended)
+
+```bash
+./create_art.sh
+```
+
+This provides an interactive, user-friendly interface that guides you through all the options for creating artwork. No GUI required!
+
+### Quick Test (No Interaction)
+
 ```bash
 ./run_test.sh
 ```
 
-**Run the GUI application:**
+Generates a sample artwork with default settings to verify everything works.
+
+### GUI Application (Requires Tkinter 8.6+)
+
 ```bash
 ./run_gui.sh
 ```
 
-**Or set PYTHONPATH manually:**
+**Note:** The GUI requires a compatible version of Tkinter (8.6+). If you encounter errors about Tkinter/Tk versions, use the interactive command-line interface instead.
+
+### Manual Execution
+
 ```bash
 export PYTHONPATH="${PWD}/src:${PYTHONPATH}"
-python3 test_generator.py  # For testing
-python3 src/main.py        # For GUI
+python3 generate_art.py    # Interactive CLI
+python3 test_generator.py  # Quick test
+python3 src/main.py        # GUI (if Tkinter compatible)
 ```
 
 ### Basic Workflow
