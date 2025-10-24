@@ -27,28 +27,45 @@ Generative Art Studio provides a GUI interface for experimenting with different 
 
 ## Installation
 
-**Quick Start (Recommended):**
+The project requires Python 3.9+ with the following packages:
+- `Pillow` (PIL)
+- `svgwrite`
+- `numpy`
+
+**If you already have these packages installed globally, you can skip the installation step.**
+
+**Quick Start:**
 
 ```bash
 cd generative-art-studio
 
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Test if dependencies are already available
+./run_test.sh
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Verify installation
-./verify_setup.sh  # or: python tests/test_random_walk.py
+# If that works, you're ready to go!
+# Otherwise, install dependencies:
+python3 -m pip install --user Pillow svgwrite numpy
 ```
 
-**For detailed installation instructions, troubleshooting, and alternative methods (including uv), see [INSTALL.md](INSTALL.md)**
+**For detailed installation instructions, troubleshooting, and alternative methods (including venv/uv), see [INSTALL.md](INSTALL.md)**
 
 ## Usage
 
+**Run the test generator (no GUI):**
 ```bash
-python src/main.py
+./run_test.sh
+```
+
+**Run the GUI application:**
+```bash
+./run_gui.sh
+```
+
+**Or set PYTHONPATH manually:**
+```bash
+export PYTHONPATH="${PWD}/src:${PYTHONPATH}"
+python3 test_generator.py  # For testing
+python3 src/main.py        # For GUI
 ```
 
 ### Basic Workflow
