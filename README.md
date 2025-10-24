@@ -27,12 +27,35 @@ Generative Art Studio provides a GUI interface for experimenting with different 
 
 ## Installation
 
+### Option 1: Using venv (Traditional)
+
 ```bash
-# Clone the repository
-git clone <repository-url>
 cd generative-art-studio
 
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
+pip install -r requirements.txt
+```
+
+### Option 2: Using uv (Modern, Faster)
+
+```bash
+cd generative-art-studio
+
+# Install dependencies (uv handles venv automatically)
+uv sync
+
+# Or just install without dev dependencies
+uv pip install -e .
+```
+
+### Option 3: Using pip directly (Not Recommended)
+
+```bash
+cd generative-art-studio
 pip install -r requirements.txt
 ```
 

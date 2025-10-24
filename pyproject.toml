@@ -1,0 +1,39 @@
+[project]
+name = "generative-art-studio"
+version = "0.1.0"
+description = "A Python application for creating computer-generated art through various algorithmic methods"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "pillow>=10.0.0",
+    "svgwrite>=1.4.3",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+system-viz = [
+    "psutil>=5.9.0",
+]
+audio = [
+    "pyaudio>=0.2.13",
+    "scipy>=1.10.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_system"
+
+[tool.black]
+line-length = 100
+target-version = ['py37']
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
