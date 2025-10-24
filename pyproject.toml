@@ -18,11 +18,8 @@ audio = [
     "pyaudio>=0.2.13",
     "scipy>=1.10.0",
 ]
-dev = [
-    "pytest>=7.0.0",
-    "black>=23.0.0",
-    "mypy>=1.0.0",
-]
+# Dev dependencies removed to avoid corporate network issues
+# Install manually if needed: pip install pytest black mypy
 
 [build-system]
 requires = ["setuptools>=61.0"]
