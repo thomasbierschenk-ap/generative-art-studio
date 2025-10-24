@@ -1,8 +1,8 @@
 # Installation Guide
 
-## Recommended: Using venv (Works Everywhere)
+## Recommended: Using venv with Public PyPI
 
-This method works reliably on all systems, including corporate networks:
+If you're on a corporate network (like Square) with SSL/Artifactory issues, use this method:
 
 ```bash
 cd generative-art-studio
@@ -14,8 +14,15 @@ python3 -m venv venv
 source venv/bin/activate  # On macOS/Linux
 # OR on Windows: venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install using public PyPI (bypasses corporate Artifactory)
+./install_public_pypi.sh
+
+# OR manually:
+pip install --index-url https://pypi.org/simple \
+    --trusted-host pypi.org \
+    --trusted-host pypi.python.org \
+    --trusted-host files.pythonhosted.org \
+    -r requirements.txt
 
 # Verify installation
 ./verify_setup.sh  # On macOS/Linux
@@ -23,6 +30,15 @@ pip install -r requirements.txt
 
 # Test it works
 python test_generator.py
+```
+
+## Alternative: Standard Installation (If No Corporate Network Issues)
+
+```bash
+cd generative-art-studio
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Alternative: Using uv (May Have Issues on Corporate Networks)
