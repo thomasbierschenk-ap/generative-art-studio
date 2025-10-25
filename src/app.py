@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Dict
 import os
-from generators import RandomWalkGenerator, BaseGenerator
+from generators import RandomWalkGenerator, MathematicalPatternsGenerator, BaseGenerator
 from gui import MainWindow
 
 
@@ -53,12 +53,15 @@ class GenerativeArtApp:
         """
         generators = {}
         
-        # Method 2: Random Walk (our proof of concept)
+        # Method 1: Mathematical Patterns
+        mathematical = MathematicalPatternsGenerator()
+        generators[mathematical.get_name()] = mathematical
+        
+        # Method 2: Random Walk
         random_walk = RandomWalkGenerator()
         generators[random_walk.get_name()] = random_walk
         
         # Future generators will be added here:
-        # Method 1: Mathematical Patterns
         # Method 3: System Visualization
         # Method 4: Audio Reactive
         
