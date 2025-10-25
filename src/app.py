@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Dict
 import os
-from generators import RandomWalkGenerator
+from generators import RandomWalkGenerator, BaseGenerator
 from gui import MainWindow
 
 
@@ -27,12 +27,8 @@ class GenerativeArtApp:
         # Initialize generators
         self.generators = self._initialize_generators()
         
-        # For now, use the first (and only) generator
-        # In the future, we'll add a generator selection UI
-        generator = list(self.generators.values())[0]
-        
-        # Create main window
-        self.main_window = MainWindow(self.root, generator, self.output_dir)
+        # Create main window with all generators
+        self.main_window = MainWindow(self.root, self.generators, self.output_dir)
     
     def _setup_style(self):
         """Configure application styling."""

@@ -22,6 +22,12 @@ class RandomWalkGenerator(BaseGenerator):
     def get_name(self) -> str:
         return "Random Walk"
     
+    def get_description(self) -> str:
+        return "Organic flowing patterns using random walk algorithms"
+    
+    def get_icon(self) -> str:
+        return "🚶"
+    
     def get_parameters(self) -> Dict[str, Dict[str, Any]]:
         return {
             'num_walks': {

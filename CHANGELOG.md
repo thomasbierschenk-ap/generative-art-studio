@@ -4,6 +4,26 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Added - Multi-Generator Architecture (2025-10-25)
+
+#### Architecture Refactoring
+- **BaseGenerator enhancements**: Added `get_description()` and `get_icon()` methods
+- **Multi-generator support**: App now manages multiple generators in a dictionary
+- **Dynamic generator selection**: Foundation for method selector dropdown
+- **Layer history tracking**: Track which methods were used in layered artwork
+- **Improved modularity**: Easy to add new generator types
+
+#### Generator Updates
+- RandomWalkGenerator now provides description and icon
+- All generators implement consistent interface
+- Backwards compatible with existing code
+
+#### Testing
+- Created comprehensive test suite for multi-generator architecture
+- Verified backwards compatibility
+- Tested generator interface methods
+- Validated export functions
+
 ### Fixed - UI Layout Issues (2025-10-25)
 
 #### Window Size and Layout

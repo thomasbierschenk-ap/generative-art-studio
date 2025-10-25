@@ -16,17 +16,19 @@ import os
 class MainWindow:
     """Main application window with live preview canvas."""
     
-    def __init__(self, root: tk.Tk, generator, output_dir: str):
+    def __init__(self, root: tk.Tk, generators: Dict[str, Any], output_dir: str):
         """
         Initialize the main window.
         
         Args:
             root: Tkinter root window
-            generator: Art generator instance
+            generators: Dictionary of available generators {name: instance}
             output_dir: Directory for saving output files
         """
         self.root = root
-        self.generator = generator
+        self.generators = generators
+        self.current_generator_name = list(generators.keys())[0]
+        self.current_generator = generators[self.current_generator_name]
         self.output_dir = output_dir
         
         # State
@@ -36,11 +38,11 @@ class MainWindow:
         self.preview_image = None
         self.abort_generation = False
         self.generation_start_time = None
-        self.keep_layers = False  # New: track if we should keep previous artwork
+        self.layer_history = []  # Track which methods were used
         
         # Set up the window
-        self.root.title(f"Generative Art Studio - {generator.get_name()}")
-        self.root.geometry("1500x1000")  # Increased from 1400x900 to 1500x1000
+        self.root.title(f"Generative Art Studio - {self.current_generator_name}")
+        self.root.geometry("1500x1000")
         
         # Create the UI
         self._create_ui()
@@ -85,7 +87,7 @@ class MainWindow:
         # Title
         title_label = ttk.Label(
             scrollable_frame,
-            text=self.generator.get_name(),
+            text=self.current_generator.get_name(),
             font=("Arial", 16, "bold")
         )
         title_label.pack(pady=10)
@@ -224,7 +226,7 @@ class MainWindow:
         
     def _create_parameter_controls(self, parent):
         """Create controls for generator parameters."""
-        params = self.generator.get_parameters()
+        params = self.current_generator.get_parameters()
         
         row = 0
         for param_name, param_def in params.items():
@@ -430,7 +432,7 @@ class MainWindow:
                     )
                     self._on_progress(merged_artwork, progress)
                 
-                new_artwork = self.generator.generate(
+                new_artwork = self.current_generator.generate(
                     width, height, params,
                     progress_callback=layer_progress_callback
                 )
@@ -445,7 +447,7 @@ class MainWindow:
                     circles=previous_artwork.circles + new_artwork.circles
                 )
             else:
-                new_artwork = self.generator.generate(
+                new_artwork = self.current_generator.generate(
                     width, height, params,
                     progress_callback=self._on_progress
                 )
@@ -614,7 +616,7 @@ class MainWindow:
                 initialdir=self.output_dir
             )
             if filename:
-                self.generator.to_png(self.current_artwork, filename)
+                self.current_generator.to_png(self.current_artwork, filename)
                 self.status_var.set(f"Saved: {os.path.basename(filename)}")
         
         elif format_type == 'svg':
@@ -624,5 +626,5 @@ class MainWindow:
                 initialdir=self.output_dir
             )
             if filename:
-                self.generator.to_svg(self.current_artwork, filename)
+                self.current_generator.to_svg(self.current_artwork, filename)
                 self.status_var.set(f"Saved: {os.path.basename(filename)}")

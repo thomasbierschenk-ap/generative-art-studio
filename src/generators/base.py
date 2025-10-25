@@ -61,6 +61,14 @@ class BaseGenerator(ABC):
         """Return the display name of this generator."""
         pass
     
+    def get_description(self) -> str:
+        """Return a brief description of this generator."""
+        return ""
+    
+    def get_icon(self) -> str:
+        """Return an emoji/icon for UI display."""
+        return "🎨"
+    
     @abstractmethod
     def get_parameters(self) -> Dict[str, Dict[str, Any]]:
         """
