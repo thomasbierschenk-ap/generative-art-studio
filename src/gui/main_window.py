@@ -51,13 +51,16 @@ class MainWindow:
         main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         main_paned.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # Left panel: Controls
-        left_panel = ttk.Frame(main_paned, width=400)
+        # Left panel: Controls (fixed width, no scrolling needed)
+        left_panel = ttk.Frame(main_paned, width=420)
         main_paned.add(left_panel, weight=0)
         
-        # Right panel: Preview canvas
+        # Right panel: Preview canvas (takes remaining space)
         right_panel = ttk.Frame(main_paned)
         main_paned.add(right_panel, weight=1)
+        
+        # Prevent the left panel from shrinking below its minimum width
+        left_panel.pack_propagate(False)
         
         # Build left panel
         self._create_control_panel(left_panel)
@@ -68,7 +71,7 @@ class MainWindow:
     def _create_control_panel(self, parent):
         """Create the control panel with parameters."""
         # Scrollable frame for parameters
-        canvas = tk.Canvas(parent, width=380)
+        canvas = tk.Canvas(parent, width=400)
         scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
         
