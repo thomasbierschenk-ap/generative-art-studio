@@ -267,7 +267,8 @@ class MainWindow:
                 else:
                     value_label.config(text=f"{int(var.get())}")
             
-            var.trace('w', update_label)
+            # Use trace_add for Tkinter 8.6+ compatibility
+            var.trace_add('write', update_label)
             
             frame.var = var  # Store reference
             return frame
