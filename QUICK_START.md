@@ -113,9 +113,26 @@ Color mode: 1 (Monochrome)
 3. **Save favorites** with descriptive names
 4. **Generate multiple** versions to find the perfect one
 
+## Try the GUI (With Live Preview!)
+
+If you have a compatible Tkinter installation, try the GUI to watch your artwork being created in real-time:
+
+```bash
+./run_gui_modern.sh
+```
+
+The GUI features:
+- **Live preview canvas** - watch each random walk being drawn step-by-step
+- **Real-time progress** - see the artwork evolve as it's generated
+- **Interactive controls** - sliders and color pickers for easy parameter adjustment
+- **Instant feedback** - see the results before saving
+
+See [GUI_GUIDE.md](docs/GUI_GUIDE.md) for detailed GUI instructions.
+
 ## What's Next?
 
 - Read [CLI_GUIDE.md](docs/CLI_GUIDE.md) for detailed parameter explanations
+- Read [GUI_GUIDE.md](docs/GUI_GUIDE.md) for GUI features and tips
 - Check [ARCHITECTURE.md](docs/ARCHITECTURE.md) to understand how it works
 - See [DEVELOPMENT.md](docs/DEVELOPMENT.md) to add new generators
 

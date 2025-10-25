@@ -22,6 +22,7 @@ Generative Art Studio provides a GUI interface for experimenting with different 
 
 - **Interactive GUI**:
   - Real-time parameter adjustment
+  - **Live preview canvas** - watch artwork being created in real-time
   - Method selection
   - Preview and export capabilities
 
@@ -84,13 +85,16 @@ python3 test_generator.py  # Quick test
 python3 src/main.py        # GUI (if Tkinter compatible)
 ```
 
-### Basic Workflow
+### Basic Workflow (GUI)
 
-1. Select a generation method from the dropdown
-2. Configure output size (width x height)
-3. Adjust method-specific parameters
-4. Click "Generate" to create the artwork
-5. Save as SVG or PNG
+1. Configure output size (width x height)
+2. Adjust method-specific parameters using sliders and controls
+3. Click "Generate" to create the artwork
+4. **Watch the live preview** as the artwork is generated in real-time
+5. Once complete, save as SVG or PNG
+
+**Live Preview Feature:**
+The GUI now includes a real-time preview canvas that shows the artwork as it's being created. You'll see each random walk being drawn step-by-step, making the generation process visible and engaging. The progress bar shows the overall completion percentage.
 
 ## Project Structure
 
