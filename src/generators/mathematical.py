@@ -91,8 +91,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
         width: int,
         height: int,
         params: Dict[str, Any],
-        progress_callback: Callable[[ArtworkData, float, str], None] = None,
-        should_abort: Callable[[], bool] = None
+        progress_callback: Callable[[ArtworkData, float], None] = None
     ) -> ArtworkData:
         """Generate mathematical pattern artwork."""
         
@@ -117,44 +116,38 @@ class MathematicalPatternsGenerator(BaseGenerator):
         if pattern_type == 'spiral':
             self._generate_spiral(artwork, density, complexity, symmetry, 
                                 line_width, color, use_gradient, 
-                                progress_callback, should_abort)
+                                progress_callback)
         elif pattern_type == 'wave':
             self._generate_wave(artwork, density, complexity, symmetry,
                               line_width, color, use_gradient,
-                              progress_callback, should_abort)
+                              progress_callback)
         elif pattern_type == 'lissajous':
             self._generate_lissajous(artwork, density, complexity, symmetry,
                                    line_width, color, use_gradient,
-                                   progress_callback, should_abort)
+                                   progress_callback)
         elif pattern_type == 'fractal_tree':
             self._generate_fractal_tree(artwork, density, complexity, symmetry,
                                       line_width, color, use_gradient,
-                                      progress_callback, should_abort)
+                                      progress_callback)
         elif pattern_type == 'circle_pack':
             self._generate_circle_pack(artwork, density, complexity, symmetry,
                                      line_width, color, use_gradient,
-                                     progress_callback, should_abort)
+                                     progress_callback)
         
         return artwork
     
     def _generate_spiral(self, artwork: ArtworkData, density: int, complexity: float,
                         symmetry: int, line_width: float, color: str, use_gradient: bool,
-                        progress_callback: Callable, should_abort: Callable):
+                        progress_callback: Callable):
         """Generate spiral patterns."""
         cx, cy = artwork.width / 2, artwork.height / 2
         max_radius = min(artwork.width, artwork.height) * 0.4
         
         for sym in range(symmetry):
-            if should_abort and should_abort():
-                break
-                
             angle_offset = (2 * math.pi * sym) / symmetry
             path_points = []
             
             for i in range(density):
-                if should_abort and should_abort():
-                    break
-                
                 t = i / density
                 angle = t * complexity * 2 * math.pi + angle_offset
                 radius = t * max_radius
@@ -166,7 +159,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 # Progress update
                 if progress_callback and i % 10 == 0:
                     progress = ((sym * density + i) / (symmetry * density)) * 100
-                    progress_callback(artwork, progress, f"Drawing spiral {sym + 1}/{symmetry}")
+                    progress_callback(artwork, progress)
             
             # Add path to artwork
             if len(path_points) > 1:
@@ -180,21 +173,15 @@ class MathematicalPatternsGenerator(BaseGenerator):
     
     def _generate_wave(self, artwork: ArtworkData, density: int, complexity: float,
                       symmetry: int, line_width: float, color: str, use_gradient: bool,
-                      progress_callback: Callable, should_abort: Callable):
+                      progress_callback: Callable):
         """Generate wave patterns."""
         num_waves = symmetry
         
         for wave_idx in range(num_waves):
-            if should_abort and should_abort():
-                break
-            
             path_points = []
             y_offset = (artwork.height / (num_waves + 1)) * (wave_idx + 1)
             
             for i in range(density):
-                if should_abort and should_abort():
-                    break
-                
                 t = i / density
                 x = t * artwork.width
                 
@@ -209,7 +196,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 # Progress update
                 if progress_callback and i % 10 == 0:
                     progress = ((wave_idx * density + i) / (num_waves * density)) * 100
-                    progress_callback(artwork, progress, f"Drawing wave {wave_idx + 1}/{num_waves}")
+                    progress_callback(artwork, progress)
             
             # Add path to artwork
             if len(path_points) > 1:
@@ -223,25 +210,19 @@ class MathematicalPatternsGenerator(BaseGenerator):
     
     def _generate_lissajous(self, artwork: ArtworkData, density: int, complexity: float,
                           symmetry: int, line_width: float, color: str, use_gradient: bool,
-                          progress_callback: Callable, should_abort: Callable):
+                          progress_callback: Callable):
         """Generate Lissajous curves."""
         cx, cy = artwork.width / 2, artwork.height / 2
         scale_x = artwork.width * 0.4
         scale_y = artwork.height * 0.4
         
         for sym in range(symmetry):
-            if should_abort and should_abort():
-                break
-            
             path_points = []
             a = 1 + sym * 0.5
             b = complexity
             delta = (math.pi / 4) * sym
             
             for i in range(density):
-                if should_abort and should_abort():
-                    break
-                
                 t = (i / density) * 2 * math.pi
                 x = cx + scale_x * math.sin(a * t + delta)
                 y = cy + scale_y * math.sin(b * t)
@@ -250,7 +231,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 # Progress update
                 if progress_callback and i % 10 == 0:
                     progress = ((sym * density + i) / (symmetry * density)) * 100
-                    progress_callback(artwork, progress, f"Drawing curve {sym + 1}/{symmetry}")
+                    progress_callback(artwork, progress)
             
             # Close the curve
             if len(path_points) > 0:
@@ -268,15 +249,12 @@ class MathematicalPatternsGenerator(BaseGenerator):
     
     def _generate_fractal_tree(self, artwork: ArtworkData, density: int, complexity: float,
                               symmetry: int, line_width: float, color: str, use_gradient: bool,
-                              progress_callback: Callable, should_abort: Callable):
+                              progress_callback: Callable):
         """Generate fractal tree patterns."""
         max_depth = min(int(complexity * 3), 12)  # Limit depth to prevent exponential explosion
         total_branches = 0
         
         for sym in range(symmetry):
-            if should_abort and should_abort():
-                break
-            
             # Starting position and angle
             angle_offset = (2 * math.pi * sym) / symmetry
             start_x = artwork.width / 2
@@ -288,8 +266,6 @@ class MathematicalPatternsGenerator(BaseGenerator):
             branches_drawn = [0]  # Use list to allow modification in nested function
             
             def draw_branch(x, y, angle, length, depth):
-                if should_abort and should_abort():
-                    return
                 if depth > max_depth or length < 2:
                     return
                 
@@ -311,7 +287,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 # Progress update
                 if progress_callback and branches_drawn[0] % 5 == 0:
                     progress = ((sym + branches_drawn[0] / 100) / symmetry) * 100
-                    progress_callback(artwork, min(progress, 99), f"Growing tree {sym + 1}/{symmetry}")
+                    progress_callback(artwork, min(progress, 99))
                 
                 # Recursively draw child branches
                 new_length = length * 0.7
@@ -325,7 +301,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
     
     def _generate_circle_pack(self, artwork: ArtworkData, density: int, complexity: float,
                             symmetry: int, line_width: float, color: str, use_gradient: bool,
-                            progress_callback: Callable, should_abort: Callable):
+                            progress_callback: Callable):
         """Generate circle packing patterns."""
         circles = []
         max_radius = min(artwork.width, artwork.height) * 0.1
@@ -333,15 +309,9 @@ class MathematicalPatternsGenerator(BaseGenerator):
         attempts_per_circle = 50
         
         for i in range(density):
-            if should_abort and should_abort():
-                break
-            
             # Try to place a circle
             placed = False
             for attempt in range(attempts_per_circle):
-                if should_abort and should_abort():
-                    break
-                
                 # Random position
                 x = random.uniform(0, artwork.width)
                 y = random.uniform(0, artwork.height)
@@ -368,7 +338,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
             # Progress update
             if progress_callback and i % 5 == 0:
                 progress = (i / density) * 100
-                progress_callback(artwork, progress, f"Packing circles: {len(circles)}/{density}")
+                progress_callback(artwork, progress)
             
             if not placed:
                 # If we can't place more circles, we're done
@@ -376,17 +346,11 @@ class MathematicalPatternsGenerator(BaseGenerator):
         
         # Add circles to artwork with symmetry
         for sym in range(symmetry):
-            if should_abort and should_abort():
-                break
-            
             angle_offset = (2 * math.pi * sym) / symmetry
             cx_center = artwork.width / 2
             cy_center = artwork.height / 2
             
             for idx, (x, y, radius) in enumerate(circles):
-                if should_abort and should_abort():
-                    break
-                
                 # Rotate around center for symmetry
                 dx = x - cx_center
                 dy = y - cy_center
