@@ -4,6 +4,21 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Fixed - UI Layout Issues (2025-10-25)
+
+#### Window Size and Layout
+- **Increased window size** from 1400x900 to 1500x1000 for better content fit
+- **Fixed control panel width** - increased from 450px to 480px
+- **Fixed inner canvas width** - increased from 400px to 460px (key fix for cut-off borders)
+- **Reduced horizontal padding** on all sections from 10px to 5px
+- **Result**: All LabelFrame borders now fully visible, no scrolling needed
+
+#### Layer Mode Fixes
+- **Fixed layer mode functionality** - previous artwork now stays visible during new generation
+- **Fixed import error** - changed from relative to absolute imports to work in threaded context
+- **Fixed real-time preview** - both old and new artwork visible during generation
+- **Result**: Layer mode works perfectly, allowing multiple generations to be layered
+
 ### Added - Progress Tracking & Control Features (2025-10-25)
 
 #### New Features

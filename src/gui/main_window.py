@@ -40,7 +40,7 @@ class MainWindow:
         
         # Set up the window
         self.root.title(f"Generative Art Studio - {generator.get_name()}")
-        self.root.geometry("1400x900")
+        self.root.geometry("1500x1000")  # Increased from 1400x900 to 1500x1000
         
         # Create the UI
         self._create_ui()
@@ -49,11 +49,11 @@ class MainWindow:
         """Create the user interface layout."""
         # Main container - use grid for better control
         self.root.grid_rowconfigure(0, weight=1)
-        self.root.grid_columnconfigure(0, weight=0, minsize=450)  # Left panel fixed
+        self.root.grid_columnconfigure(0, weight=0, minsize=480)  # Left panel fixed - increased width
         self.root.grid_columnconfigure(1, weight=1)  # Right panel expands
         
         # Left panel: Controls (fixed width)
-        left_panel = ttk.Frame(self.root, width=450)
+        left_panel = ttk.Frame(self.root, width=480)
         left_panel.grid(row=0, column=0, sticky='nsew', padx=(5, 2), pady=5)
         left_panel.grid_propagate(False)  # Maintain fixed width
         
@@ -70,7 +70,7 @@ class MainWindow:
     def _create_control_panel(self, parent):
         """Create the control panel with parameters."""
         # Scrollable frame for parameters
-        canvas = tk.Canvas(parent, width=400)
+        canvas = tk.Canvas(parent, width=460)  # Increased from 400 to 460
         scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
         
@@ -92,7 +92,7 @@ class MainWindow:
         
         # Output size section
         size_frame = ttk.LabelFrame(scrollable_frame, text="Output Size", padding=10)
-        size_frame.pack(fill=tk.X, padx=10, pady=5)
+        size_frame.pack(fill=tk.X, padx=5, pady=5)  # Reduced padx from 10 to 5
         
         ttk.Label(size_frame, text="Width:").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.width_var = tk.IntVar(value=800)
@@ -106,13 +106,13 @@ class MainWindow:
         
         # Generator parameters
         params_frame = ttk.LabelFrame(scrollable_frame, text="Parameters", padding=10)
-        params_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        params_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)  # Reduced padx from 10 to 5
         
         self._create_parameter_controls(params_frame)
         
         # Action buttons
         button_frame = ttk.Frame(scrollable_frame)
-        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        button_frame.pack(fill=tk.X, padx=5, pady=10)  # Reduced padx from 10 to 5
         
         # Layer mode checkbox
         layer_frame = ttk.Frame(button_frame)
@@ -414,32 +414,50 @@ class MainWindow:
                 # Store previous artwork to merge later
                 previous_artwork = self.current_artwork
             
-            # Generate with progress callback
-            new_artwork = self.generator.generate(
-                width, height, params,
-                progress_callback=self._on_progress
-            )
-            
-            # Merge with previous artwork if in layer mode
+            # Generate with progress callback - use wrapper to handle layering
             if previous_artwork:
-                # Combine paths and circles from both artworks
-                from ..generators.base import ArtworkData
-                merged_artwork = ArtworkData(
+                # Create a wrapper callback that merges artwork during generation
+                def layer_progress_callback(new_artwork, progress):
+                    # Import here to avoid circular imports
+                    from generators.base import ArtworkData
+                    # Merge with previous artwork
+                    merged_artwork = ArtworkData(
+                        width=width,
+                        height=height,
+                        background_color=previous_artwork.background_color,
+                        paths=previous_artwork.paths + new_artwork.paths,
+                        circles=previous_artwork.circles + new_artwork.circles
+                    )
+                    self._on_progress(merged_artwork, progress)
+                
+                new_artwork = self.generator.generate(
+                    width, height, params,
+                    progress_callback=layer_progress_callback
+                )
+                
+                # Final merge
+                from generators.base import ArtworkData
+                self.current_artwork = ArtworkData(
                     width=width,
                     height=height,
                     background_color=previous_artwork.background_color,
                     paths=previous_artwork.paths + new_artwork.paths,
                     circles=previous_artwork.circles + new_artwork.circles
                 )
-                self.current_artwork = merged_artwork
             else:
+                new_artwork = self.generator.generate(
+                    width, height, params,
+                    progress_callback=self._on_progress
+                )
                 self.current_artwork = new_artwork
             
             # Final update
             self.root.after(0, self._on_generation_complete)
             
         except Exception as e:
+            import traceback
             error_msg = str(e)
+            traceback.print_exc()  # Print full traceback for debugging
             self.root.after(0, lambda: self._on_generation_error(error_msg))
     
     def _on_progress(self, artwork, progress):

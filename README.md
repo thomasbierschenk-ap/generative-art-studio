@@ -23,6 +23,9 @@ Generative Art Studio provides a GUI interface for experimenting with different 
 - **Interactive GUI**:
   - Real-time parameter adjustment
   - **Live preview canvas** - watch artwork being created in real-time
+  - **Layer mode** - combine multiple generations on the same canvas
+  - **Progress tracking** - see percentage complete and estimated time remaining
+  - **Abort control** - stop generation at any time
   - Method selection
   - Preview and export capabilities
 
