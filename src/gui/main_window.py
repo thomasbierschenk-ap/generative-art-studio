@@ -36,6 +36,7 @@ class MainWindow:
         self.preview_image = None
         self.abort_generation = False
         self.generation_start_time = None
+        self.keep_layers = False  # New: track if we should keep previous artwork
         
         # Set up the window
         self.root.title(f"Generative Art Studio - {generator.get_name()}")
@@ -110,6 +111,18 @@ class MainWindow:
         # Action buttons
         button_frame = ttk.Frame(scrollable_frame)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        # Layer mode checkbox
+        layer_frame = ttk.Frame(button_frame)
+        layer_frame.pack(fill=tk.X, pady=2)
+        
+        self.layer_mode_var = tk.BooleanVar(value=False)
+        layer_checkbox = ttk.Checkbutton(
+            layer_frame,
+            text="Keep previous artwork (layer mode)",
+            variable=self.layer_mode_var
+        )
+        layer_checkbox.pack(side=tk.LEFT)
         
         self.generate_btn = ttk.Button(
             button_frame,
@@ -393,11 +406,32 @@ class MainWindow:
             height = self.height_var.get()
             params = self._get_parameters()
             
+            # Check if we should keep previous artwork (layer mode)
+            previous_artwork = None
+            if self.layer_mode_var.get() and self.current_artwork:
+                # Store previous artwork to merge later
+                previous_artwork = self.current_artwork
+            
             # Generate with progress callback
-            self.current_artwork = self.generator.generate(
+            new_artwork = self.generator.generate(
                 width, height, params,
                 progress_callback=self._on_progress
             )
+            
+            # Merge with previous artwork if in layer mode
+            if previous_artwork:
+                # Combine paths and circles from both artworks
+                from ..generators.base import ArtworkData
+                merged_artwork = ArtworkData(
+                    width=width,
+                    height=height,
+                    background_color=previous_artwork.background_color,
+                    paths=previous_artwork.paths + new_artwork.paths,
+                    circles=previous_artwork.circles + new_artwork.circles
+                )
+                self.current_artwork = merged_artwork
+            else:
+                self.current_artwork = new_artwork
             
             # Final update
             self.root.after(0, self._on_generation_complete)
@@ -430,10 +464,16 @@ class MainWindow:
         else:
             progress_text = f"{int(progress)}% - Est. time remaining: calculating..."
         
-        # Update UI
-        self.root.after(0, lambda: self.progress_var.set(progress))
-        self.root.after(0, lambda: self.progress_info_var.set(progress_text))
-        self.root.after(0, lambda: self._update_preview(artwork))
+        # Update UI - use update_idletasks to force immediate GUI update
+        self.progress_var.set(progress)
+        self.progress_info_var.set(progress_text)
+        self._update_preview(artwork)
+        
+        # Force GUI to process pending events
+        self.root.update_idletasks()
+        
+        # Small sleep to allow GUI thread to breathe
+        time.sleep(0.01)
     
     def _update_preview(self, artwork):
         """Update the preview canvas with current artwork."""
