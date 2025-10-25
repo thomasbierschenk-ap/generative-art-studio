@@ -47,20 +47,19 @@ class MainWindow:
         
     def _create_ui(self):
         """Create the user interface layout."""
-        # Main container with two panes
-        main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
-        main_paned.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        # Main container - use grid for better control
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=0, minsize=450)  # Left panel fixed
+        self.root.grid_columnconfigure(1, weight=1)  # Right panel expands
         
-        # Left panel: Controls (fixed width, no scrolling needed)
-        left_panel = ttk.Frame(main_paned, width=420)
-        main_paned.add(left_panel, weight=0)
+        # Left panel: Controls (fixed width)
+        left_panel = ttk.Frame(self.root, width=450)
+        left_panel.grid(row=0, column=0, sticky='nsew', padx=(5, 2), pady=5)
+        left_panel.grid_propagate(False)  # Maintain fixed width
         
         # Right panel: Preview canvas (takes remaining space)
-        right_panel = ttk.Frame(main_paned)
-        main_paned.add(right_panel, weight=1)
-        
-        # Prevent the left panel from shrinking below its minimum width
-        left_panel.pack_propagate(False)
+        right_panel = ttk.Frame(self.root)
+        right_panel.grid(row=0, column=1, sticky='nsew', padx=(2, 5), pady=5)
         
         # Build left panel
         self._create_control_panel(left_panel)
@@ -440,7 +439,8 @@ class MainWindow:
             self.root.after(0, self._on_generation_complete)
             
         except Exception as e:
-            self.root.after(0, lambda: self._on_generation_error(str(e)))
+            error_msg = str(e)
+            self.root.after(0, lambda: self._on_generation_error(error_msg))
     
     def _on_progress(self, artwork, progress):
         """Handle progress updates from generator."""
