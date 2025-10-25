@@ -7,10 +7,10 @@ Includes spirals, waves, fractals, Lissajous curves, and circle packing.
 
 import math
 import random
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, Tuple
 import numpy as np
 
-from .base import BaseGenerator, ArtworkData
+from .base import BaseGenerator, ArtworkData, PathElement, CircleElement
 
 
 class MathematicalPatternsGenerator(BaseGenerator):
@@ -109,7 +109,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
         artwork = ArtworkData(
             width=width,
             height=height,
-            background_color=bg_color
+            background_color=self._hex_to_rgb(bg_color)
         )
         
         # Generate pattern based on type
@@ -163,13 +163,13 @@ class MathematicalPatternsGenerator(BaseGenerator):
             
             # Add path to artwork
             if len(path_points) > 1:
-                path_color = self._get_gradient_color(color, sym / max(symmetry - 1, 1)) if use_gradient else color
-                artwork.paths.append({
-                    'points': path_points,
-                    'stroke': path_color,
-                    'stroke_width': line_width,
-                    'fill': 'none'
-                })
+                path_color = self._get_gradient_color(color, sym / max(symmetry - 1, 1)) if use_gradient else self._hex_to_rgb(color)
+                artwork.paths.append(PathElement(
+                    points=path_points,
+                    color=path_color,
+                    width=line_width,
+                    closed=False
+                ))
     
     def _generate_wave(self, artwork: ArtworkData, density: int, complexity: float,
                       symmetry: int, line_width: float, color: str, use_gradient: bool,
@@ -200,13 +200,13 @@ class MathematicalPatternsGenerator(BaseGenerator):
             
             # Add path to artwork
             if len(path_points) > 1:
-                path_color = self._get_gradient_color(color, wave_idx / max(num_waves - 1, 1)) if use_gradient else color
-                artwork.paths.append({
-                    'points': path_points,
-                    'stroke': path_color,
-                    'stroke_width': line_width,
-                    'fill': 'none'
-                })
+                path_color = self._get_gradient_color(color, wave_idx / max(num_waves - 1, 1)) if use_gradient else self._hex_to_rgb(color)
+                artwork.paths.append(PathElement(
+                    points=path_points,
+                    color=path_color,
+                    width=line_width,
+                    closed=False
+                ))
     
     def _generate_lissajous(self, artwork: ArtworkData, density: int, complexity: float,
                           symmetry: int, line_width: float, color: str, use_gradient: bool,
@@ -239,13 +239,13 @@ class MathematicalPatternsGenerator(BaseGenerator):
             
             # Add path to artwork
             if len(path_points) > 1:
-                path_color = self._get_gradient_color(color, sym / max(symmetry - 1, 1)) if use_gradient else color
-                artwork.paths.append({
-                    'points': path_points,
-                    'stroke': path_color,
-                    'stroke_width': line_width,
-                    'fill': 'none'
-                })
+                path_color = self._get_gradient_color(color, sym / max(symmetry - 1, 1)) if use_gradient else self._hex_to_rgb(color)
+                artwork.paths.append(PathElement(
+                    points=path_points,
+                    color=path_color,
+                    width=line_width,
+                    closed=True
+                ))
     
     def _generate_fractal_tree(self, artwork: ArtworkData, density: int, complexity: float,
                               symmetry: int, line_width: float, color: str, use_gradient: bool,
@@ -274,13 +274,13 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 end_y = y + length * math.sin(angle)
                 
                 # Add branch as path
-                branch_color = self._get_gradient_color(color, depth / max_depth) if use_gradient else color
-                artwork.paths.append({
-                    'points': [(x, y), (end_x, end_y)],
-                    'stroke': branch_color,
-                    'stroke_width': line_width * (1 - depth / (max_depth + 1)),
-                    'fill': 'none'
-                })
+                branch_color = self._get_gradient_color(color, depth / max_depth) if use_gradient else self._hex_to_rgb(color)
+                artwork.paths.append(PathElement(
+                    points=[(x, y), (end_x, end_y)],
+                    color=branch_color,
+                    width=line_width * (1 - depth / (max_depth + 1)),
+                    closed=False
+                ))
                 
                 branches_drawn[0] += 1
                 
@@ -357,23 +357,28 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 rotated_x = cx_center + dx * math.cos(angle_offset) - dy * math.sin(angle_offset)
                 rotated_y = cy_center + dx * math.sin(angle_offset) + dy * math.cos(angle_offset)
                 
-                circle_color = self._get_gradient_color(color, idx / len(circles)) if use_gradient else color
-                artwork.circles.append({
-                    'cx': rotated_x,
-                    'cy': rotated_y,
-                    'r': radius,
-                    'stroke': circle_color,
-                    'stroke_width': line_width,
-                    'fill': 'none'
-                })
+                circle_color = self._get_gradient_color(color, idx / len(circles)) if use_gradient else self._hex_to_rgb(color)
+                artwork.circles.append(CircleElement(
+                    center=(rotated_x, rotated_y),
+                    radius=radius,
+                    color=circle_color,
+                    fill=False,
+                    stroke_width=line_width
+                ))
     
-    def _get_gradient_color(self, base_color: str, t: float) -> str:
+    def _hex_to_rgb(self, hex_color: str) -> Tuple[int, int, int]:
+        """Convert hex color string to RGB tuple."""
+        hex_color = hex_color.lstrip('#')
+        return (
+            int(hex_color[0:2], 16),
+            int(hex_color[2:4], 16),
+            int(hex_color[4:6], 16)
+        )
+    
+    def _get_gradient_color(self, base_color: str, t: float) -> Tuple[int, int, int]:
         """Generate a color along a gradient from base_color."""
         # Parse hex color
-        base_color = base_color.lstrip('#')
-        r = int(base_color[0:2], 16)
-        g = int(base_color[2:4], 16)
-        b = int(base_color[4:6], 16)
+        r, g, b = self._hex_to_rgb(base_color)
         
         # Shift hue based on t
         # Convert to HSV-like manipulation
@@ -394,4 +399,4 @@ class MathematicalPatternsGenerator(BaseGenerator):
             g = int(max(0, min(255, g + hue_shift * (b - r) / 255)))
             b = int(max(0, min(255, b + hue_shift * (r - g) / 255)))
         
-        return f'#{r:02x}{g:02x}{b:02x}'
+        return (r, g, b)

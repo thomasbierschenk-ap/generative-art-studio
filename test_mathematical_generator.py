@@ -45,9 +45,9 @@ def test_generator():
         test_params['density'] = 50  # Lower density for faster testing
         
         # Progress callback
-        def progress_callback(artwork, progress, status):
+        def progress_callback(artwork, progress):
             if int(progress) % 25 == 0:
-                print(f"    Progress: {progress:.0f}% - {status}")
+                print(f"    Progress: {progress:.0f}%")
         
         # Generate artwork
         try:
