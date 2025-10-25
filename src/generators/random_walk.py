@@ -116,8 +116,9 @@ class RandomWalkGenerator(BaseGenerator):
             }
         }
     
-    def generate(self, width: int, height: int, params: Dict[str, Any]) -> ArtworkData:
-        """Generate random walk artwork."""
+    def generate(self, width: int, height: int, params: Dict[str, Any],
+                 progress_callback=None) -> ArtworkData:
+        """Generate random walk artwork with optional progress updates."""
         # Validate parameters
         params = self.validate_parameters(params)
         
@@ -132,7 +133,8 @@ class RandomWalkGenerator(BaseGenerator):
         # Generate each walk
         for i in range(params['num_walks']):
             walk_color = self._get_walk_color(i, params)
-            path = self._generate_walk(width, height, params, walk_color)
+            path = self._generate_walk(width, height, params, walk_color, 
+                                       artwork, progress_callback, i)
             artwork.paths.append(path)
             
             # Add endpoint node if requested
@@ -145,6 +147,11 @@ class RandomWalkGenerator(BaseGenerator):
                     fill=True
                 )
                 artwork.circles.append(node)
+            
+            # Update progress after each walk completes
+            if progress_callback:
+                progress = ((i + 1) / params['num_walks']) * 100
+                progress_callback(artwork, progress)
         
         return artwork
     
@@ -153,9 +160,12 @@ class RandomWalkGenerator(BaseGenerator):
         width: int,
         height: int,
         params: Dict[str, Any],
-        color: Tuple[int, int, int]
+        color: Tuple[int, int, int],
+        artwork: ArtworkData,
+        progress_callback,
+        walk_index: int
     ) -> PathElement:
-        """Generate a single random walk."""
+        """Generate a single random walk with progress updates."""
         points = []
         
         # Determine starting position
@@ -163,6 +173,9 @@ class RandomWalkGenerator(BaseGenerator):
         current_angle = random.uniform(0, 2 * math.pi)
         
         points.append((x, y))
+        
+        # Calculate update frequency (update every N steps for performance)
+        update_interval = max(1, params['steps_per_walk'] // 50)
         
         # Perform the walk
         for step in range(params['steps_per_walk']):
@@ -188,6 +201,30 @@ class RandomWalkGenerator(BaseGenerator):
             
             x, y = new_x, new_y
             points.append((x, y))
+            
+            # Send progress updates during walk generation
+            if progress_callback and step % update_interval == 0:
+                # Create a temporary path with current points
+                temp_path = PathElement(
+                    points=points.copy(),
+                    color=color,
+                    width=params['line_width'],
+                    closed=False
+                )
+                # Calculate overall progress
+                walk_progress = walk_index / params['num_walks']
+                step_progress = (step / params['steps_per_walk']) / params['num_walks']
+                total_progress = (walk_progress + step_progress) * 100
+                
+                # Create temporary artwork with current path
+                temp_artwork = ArtworkData(
+                    width=width,
+                    height=height,
+                    background_color=artwork.background_color,
+                    paths=artwork.paths + [temp_path],
+                    circles=artwork.circles.copy()
+                )
+                progress_callback(temp_artwork, total_progress)
         
         return PathElement(
             points=points,

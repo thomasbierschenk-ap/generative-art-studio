@@ -83,7 +83,8 @@ class BaseGenerator(ABC):
         pass
     
     @abstractmethod
-    def generate(self, width: int, height: int, params: Dict[str, Any]) -> ArtworkData:
+    def generate(self, width: int, height: int, params: Dict[str, Any], 
+                 progress_callback: Optional[callable] = None) -> ArtworkData:
         """
         Generate artwork with the given dimensions and parameters.
         
@@ -91,6 +92,8 @@ class BaseGenerator(ABC):
             width: Output width in pixels
             height: Output height in pixels
             params: Dictionary of parameter values
+            progress_callback: Optional callback function(artwork_data, progress_pct) 
+                             called during generation for live preview
             
         Returns:
             ArtworkData object containing the generated artwork
