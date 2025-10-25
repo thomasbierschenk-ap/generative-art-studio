@@ -7,6 +7,7 @@ Coordinates between GUI and generators.
 import tkinter as tk
 from tkinter import ttk
 from typing import Dict
+import os
 from generators import RandomWalkGenerator
 from gui import MainWindow
 
@@ -19,11 +20,19 @@ class GenerativeArtApp:
         self.root = tk.Tk()
         self._setup_style()
         
+        # Set up output directory
+        self.output_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'output')
+        os.makedirs(self.output_dir, exist_ok=True)
+        
         # Initialize generators
         self.generators = self._initialize_generators()
         
+        # For now, use the first (and only) generator
+        # In the future, we'll add a generator selection UI
+        generator = list(self.generators.values())[0]
+        
         # Create main window
-        self.main_window = MainWindow(self.root, self.generators)
+        self.main_window = MainWindow(self.root, generator, self.output_dir)
     
     def _setup_style(self):
         """Configure application styling."""

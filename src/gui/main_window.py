@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, colorchooser
 from typing import Dict, Any, Optional
 import threading
+import time
 from PIL import Image, ImageTk, ImageDraw
 import os
 
@@ -33,6 +34,8 @@ class MainWindow:
         self.current_artwork = None
         self.is_generating = False
         self.preview_image = None
+        self.abort_generation = False
+        self.generation_start_time = None
         
         # Set up the window
         self.root.title(f"Generative Art Studio - {generator.get_name()}")
@@ -116,6 +119,25 @@ class MainWindow:
         )
         self.generate_btn.pack(fill=tk.X, pady=2)
         
+        # Abort and Clear buttons in a row
+        control_row = ttk.Frame(button_frame)
+        control_row.pack(fill=tk.X, pady=2)
+        
+        self.abort_btn = ttk.Button(
+            control_row,
+            text="Abort",
+            command=self._on_abort,
+            state=tk.DISABLED
+        )
+        self.abort_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
+        
+        self.clear_btn = ttk.Button(
+            control_row,
+            text="Clear Canvas",
+            command=self._on_clear
+        )
+        self.clear_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
+        
         self.save_png_btn = ttk.Button(
             button_frame,
             text="Save as PNG",
@@ -132,14 +154,23 @@ class MainWindow:
         )
         self.save_svg_btn.pack(fill=tk.X, pady=2)
         
+        # Progress section
+        progress_frame = ttk.LabelFrame(button_frame, text="Progress", padding=5)
+        progress_frame.pack(fill=tk.X, pady=5)
+        
         # Progress bar
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(
-            button_frame,
+            progress_frame,
             variable=self.progress_var,
             maximum=100
         )
-        self.progress_bar.pack(fill=tk.X, pady=5)
+        self.progress_bar.pack(fill=tk.X, pady=2)
+        
+        # Progress info (percentage and time)
+        self.progress_info_var = tk.StringVar(value="0% - Estimated time: --")
+        progress_info_label = ttk.Label(progress_frame, textvariable=self.progress_info_var, font=("Arial", 9))
+        progress_info_label.pack(pady=2)
         
         # Status label
         self.status_var = tk.StringVar(value="Ready")
@@ -321,16 +352,39 @@ class MainWindow:
             return
         
         self.is_generating = True
+        self.abort_generation = False
+        self.generation_start_time = time.time()
+        
         self.generate_btn.config(state=tk.DISABLED)
+        self.abort_btn.config(state=tk.NORMAL)
         self.save_png_btn.config(state=tk.DISABLED)
         self.save_svg_btn.config(state=tk.DISABLED)
         self.status_var.set("Generating...")
         self.progress_var.set(0)
+        self.progress_info_var.set("0% - Estimated time: calculating...")
         
         # Run generation in a separate thread
         thread = threading.Thread(target=self._generate_artwork)
         thread.daemon = True
         thread.start()
+    
+    def _on_abort(self):
+        """Handle abort button click."""
+        if self.is_generating:
+            self.abort_generation = True
+            self.status_var.set("Aborting...")
+            self.abort_btn.config(state=tk.DISABLED)
+    
+    def _on_clear(self):
+        """Handle clear canvas button click."""
+        self.preview_canvas.delete("all")
+        self.current_artwork = None
+        self.preview_image = None
+        self.save_png_btn.config(state=tk.DISABLED)
+        self.save_svg_btn.config(state=tk.DISABLED)
+        self.status_var.set("Canvas cleared")
+        self.progress_var.set(0)
+        self.progress_info_var.set("0% - Estimated time: --")
     
     def _generate_artwork(self):
         """Generate artwork in background thread."""
@@ -353,10 +407,32 @@ class MainWindow:
     
     def _on_progress(self, artwork, progress):
         """Handle progress updates from generator."""
-        # Update progress bar
-        self.root.after(0, lambda: self.progress_var.set(progress))
+        # Check if abort was requested
+        if self.abort_generation:
+            raise InterruptedError("Generation aborted by user")
         
-        # Update preview
+        # Calculate estimated time remaining
+        if self.generation_start_time and progress > 0:
+            elapsed = time.time() - self.generation_start_time
+            total_estimated = elapsed / (progress / 100.0)
+            remaining = total_estimated - elapsed
+            
+            if remaining < 60:
+                time_str = f"{int(remaining)}s"
+            elif remaining < 3600:
+                time_str = f"{int(remaining / 60)}m {int(remaining % 60)}s"
+            else:
+                hours = int(remaining / 3600)
+                minutes = int((remaining % 3600) / 60)
+                time_str = f"{hours}h {minutes}m"
+            
+            progress_text = f"{int(progress)}% - Est. time remaining: {time_str}"
+        else:
+            progress_text = f"{int(progress)}% - Est. time remaining: calculating..."
+        
+        # Update UI
+        self.root.after(0, lambda: self.progress_var.set(progress))
+        self.root.after(0, lambda: self.progress_info_var.set(progress_text))
         self.root.after(0, lambda: self._update_preview(artwork))
     
     def _update_preview(self, artwork):
@@ -423,11 +499,26 @@ class MainWindow:
     def _on_generation_complete(self):
         """Handle successful generation completion."""
         self.is_generating = False
+        self.abort_generation = False
+        
         self.generate_btn.config(state=tk.NORMAL)
+        self.abort_btn.config(state=tk.DISABLED)
         self.save_png_btn.config(state=tk.NORMAL)
         self.save_svg_btn.config(state=tk.NORMAL)
-        self.status_var.set("Generation complete!")
+        
+        # Calculate total time
+        if self.generation_start_time:
+            elapsed = time.time() - self.generation_start_time
+            if elapsed < 60:
+                time_str = f"{elapsed:.1f}s"
+            else:
+                time_str = f"{int(elapsed / 60)}m {int(elapsed % 60)}s"
+            self.status_var.set(f"Generation complete! (took {time_str})")
+        else:
+            self.status_var.set("Generation complete!")
+        
         self.progress_var.set(100)
+        self.progress_info_var.set("100% - Complete")
         
         # Update preview with final artwork
         self._update_preview(self.current_artwork)
@@ -435,10 +526,19 @@ class MainWindow:
     def _on_generation_error(self, error_msg):
         """Handle generation error."""
         self.is_generating = False
+        self.abort_generation = False
+        
         self.generate_btn.config(state=tk.NORMAL)
-        self.status_var.set("Error!")
-        self.progress_var.set(0)
-        messagebox.showerror("Generation Error", f"Failed to generate artwork:\n{error_msg}")
+        self.abort_btn.config(state=tk.DISABLED)
+        
+        # Check if it was an abort
+        if "aborted" in error_msg.lower() or "interrupted" in error_msg.lower():
+            self.status_var.set("Generation aborted by user")
+            self.progress_info_var.set("Aborted")
+        else:
+            self.status_var.set("Error!")
+            self.progress_info_var.set("Error occurred")
+            messagebox.showerror("Generation Error", f"Failed to generate artwork:\n{error_msg}")
     
     def _on_save(self, format_type):
         """Handle save button click."""

@@ -4,6 +4,31 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Added - Progress Tracking & Control Features (2025-10-25)
+
+#### New Features
+- **Progress Indicator with Time Estimation**: Real-time display showing:
+  - Current progress percentage
+  - Estimated time remaining (dynamically calculated)
+  - Total time taken upon completion
+- **Abort Button**: Stop generation in progress at any time
+- **Clear Canvas Button**: Clear the preview and reset the workspace
+- **Enhanced Progress Display**: Formatted time display (seconds, minutes, hours)
+
+#### UI Improvements
+- Progress section with labeled frame
+- Abort and Clear buttons in a convenient row layout
+- Progress information label showing percentage and time estimates
+- Proper button state management (enabled/disabled based on context)
+- Status messages for all actions (generating, complete, aborted, cleared)
+
+#### Technical Enhancements
+- Time tracking from generation start
+- Dynamic time estimation based on progress rate
+- Abort handling with proper cleanup
+- Thread-safe abort mechanism
+- Graceful error handling for interrupted generation
+
 ### Added - Live Preview Feature (2025-10-25)
 
 #### Major Features

@@ -19,6 +19,29 @@ The most exciting feature of the GUI is the **live preview canvas** that shows y
 
 The left panel provides all the controls you need to customize your artwork:
 
+#### Action Buttons
+
+- **Generate**: Start creating artwork with current parameters
+- **Abort**: Stop generation in progress (enabled during generation)
+- **Clear Canvas**: Clear the preview and reset workspace
+- **Save as PNG**: Export finished artwork as raster image
+- **Save as SVG**: Export finished artwork as vector graphics
+
+#### Progress Tracking
+
+The progress section shows real-time information during generation:
+- **Progress Bar**: Visual indicator of completion percentage
+- **Progress Info**: Displays:
+  - Current percentage (e.g., "45%")
+  - Estimated time remaining (e.g., "Est. time remaining: 2m 15s")
+  - Time format adjusts based on duration (seconds, minutes, hours)
+- **Status Messages**: Current operation status
+  - "Ready" - Waiting to generate
+  - "Generating..." - Creation in progress
+  - "Generation complete! (took 3.2s)" - Finished with total time
+  - "Generation aborted by user" - Stopped by user
+  - "Canvas cleared" - Workspace reset
+
 #### Output Size
 - **Width**: Set the output width in pixels (default: 800)
 - **Height**: Set the output height in pixels (default: 600)
@@ -94,9 +117,15 @@ When using the Random Walk generator, you can adjust:
 5. **Watch**: The preview canvas will show the artwork being created in real-time
    - You'll see each random walk being drawn
    - The progress bar updates as generation proceeds
+   - Progress info shows percentage and estimated time remaining
    - Status messages keep you informed
 
-6. **Save**: Once complete, use the save buttons:
+6. **Control Generation** (optional):
+   - Click "Abort" to stop generation at any time
+   - Click "Clear Canvas" to reset and start fresh
+   - Time estimates update dynamically as generation progresses
+
+7. **Save**: Once complete, use the save buttons:
    - "Save as PNG" for raster graphics
    - "Save as SVG" for vector graphics
 
