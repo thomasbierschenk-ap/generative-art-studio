@@ -21,6 +21,10 @@ The left panel provides all the controls you need to customize your artwork:
 
 #### Action Buttons
 
+- **Keep previous artwork (layer mode)**: Checkbox to enable layering
+  - When **unchecked** (default): Each generation replaces previous artwork
+  - When **checked**: New generations overlay on existing artwork
+  - Build complex compositions by adding layers iteratively
 - **Generate**: Start creating artwork with current parameters
 - **Abort**: Stop generation in progress (enabled during generation)
 - **Clear Canvas**: Clear the preview and reset workspace
@@ -128,6 +132,64 @@ When using the Random Walk generator, you can adjust:
 7. **Save**: Once complete, use the save buttons:
    - "Save as PNG" for raster graphics
    - "Save as SVG" for vector graphics
+
+### Layered Compositions (Advanced)
+
+The **layer mode** allows you to build complex artworks by overlaying multiple generations:
+
+1. **Generate Base Layer**:
+   - Set your initial parameters (e.g., 10 walks, green color, bounce behavior)
+   - Click "Generate" and wait for completion
+
+2. **Enable Layer Mode**:
+   - Check the "Keep previous artwork (layer mode)" checkbox
+   - This preserves the current artwork for the next generation
+
+3. **Add Second Layer**:
+   - Adjust parameters for contrast (e.g., 5 walks, red color, different angle variation)
+   - Click "Generate"
+   - The new walks will be drawn on top of the existing ones
+   - The background color from the first layer is preserved
+
+4. **Continue Adding Layers**:
+   - Repeat step 3 with different parameters
+   - Each generation adds to the composition
+   - Try varying:
+     - Number of walks (fewer for accents, more for density)
+     - Colors (complementary colors work well)
+     - Step sizes (mix fine and bold lines)
+     - Angle variations (structured vs chaotic)
+     - Start positions (center vs edges for different effects)
+
+5. **Save or Reset**:
+   - Save your layered composition when satisfied
+   - Uncheck layer mode to replace on next generation
+   - Click "Clear Canvas" to start completely fresh
+
+**Layering Tips:**
+- **Contrast is key**: Use different colors, line widths, or densities for each layer
+- **Build from background to foreground**: Start with dense, light layers, add sparse, bold layers on top
+- **Complementary colors**: Try blue + orange, red + green, purple + yellow
+- **Vary density**: Mix layers with many walks (background) and few walks (accents)
+- **Save incrementally**: Save after each layer you like before adding more
+- **Experiment freely**: You can always clear and start over!
+
+**Example Workflows:**
+
+*Organic Landscape:*
+1. Base: 20 green walks, small steps, bounce behavior → grass/foliage
+2. Layer 2: 10 brown walks, medium steps, center start → tree trunks
+3. Layer 3: 5 yellow walks, small steps, edges start → sunlight rays
+
+*Abstract Composition:*
+1. Base: 15 blue walks, rainbow mode, large angle variation → colorful background
+2. Layer 2: 8 black walks, thin lines, straight (low angle variation) → structure
+3. Layer 3: 3 white walks, thick lines, high angle variation → bold accents
+
+*Depth Effect:*
+1. Base: 30 gray walks, grayscale mode → background texture
+2. Layer 2: 15 colored walks, smaller steps → mid-ground detail
+3. Layer 3: 5 bold colored walks, thick lines → foreground focus
 
 ### Tips for Best Results
 
