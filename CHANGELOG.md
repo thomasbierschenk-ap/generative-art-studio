@@ -4,7 +4,34 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
-### Added - Multi-Generator Architecture (2025-10-25)
+### Added - GUI Method Selector (2025-10-25) - Phase 2
+
+#### Method Selection UI
+- **Method selector dropdown**: Choose between available generators
+- **Method description display**: Shows description below selector
+- **Dynamic parameter panel**: Parameters update when method changes
+- **Window title updates**: Shows current method name
+- **Smooth transitions**: Clean UI updates when switching methods
+
+#### Layer History Tracking
+- **Track methods used**: Records which generators created each layer
+- **Display layer info**: Status shows "2 layers (Random Walk + Random Walk)"
+- **Clear on reset**: Layer history cleared when canvas is cleared
+- **Informative feedback**: Users see what methods were combined
+
+#### Enhanced UX
+- **Method change handler**: Smoothly switches between generators
+- **Parameter rebuilding**: Automatic UI updates for new method
+- **Status messages**: Clear feedback on method switching
+- **Title updated**: "Generative Art Studio" + current method in window title
+
+#### Technical Implementation
+- Method selector with ComboboxSelected event binding
+- Dynamic parameter panel rebuilding
+- Layer history list tracking
+- Enhanced status messages with layer information
+
+### Added - Multi-Generator Architecture (2025-10-25) - Phase 1
 
 #### Architecture Refactoring
 - **BaseGenerator enhancements**: Added `get_description()` and `get_icon()` methods

@@ -87,10 +87,36 @@ class MainWindow:
         # Title
         title_label = ttk.Label(
             scrollable_frame,
-            text=self.current_generator.get_name(),
+            text="Generative Art Studio",
             font=("Arial", 16, "bold")
         )
         title_label.pack(pady=10)
+        
+        # Method Selector
+        method_frame = ttk.LabelFrame(scrollable_frame, text="Generator Method", padding=10)
+        method_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        self.method_var = tk.StringVar(value=self.current_generator_name)
+        method_dropdown = ttk.Combobox(
+            method_frame,
+            textvariable=self.method_var,
+            values=list(self.generators.keys()),
+            state='readonly',
+            width=35
+        )
+        method_dropdown.pack(fill=tk.X, padx=5, pady=5)
+        method_dropdown.bind('<<ComboboxSelected>>', self._on_method_changed)
+        
+        # Method description
+        self.method_desc_var = tk.StringVar(value=self.current_generator.get_description())
+        desc_label = ttk.Label(
+            method_frame,
+            textvariable=self.method_desc_var,
+            wraplength=420,
+            font=("Arial", 9),
+            foreground="gray"
+        )
+        desc_label.pack(fill=tk.X, padx=5, pady=(0, 5))
         
         # Output size section
         size_frame = ttk.LabelFrame(scrollable_frame, text="Output Size", padding=10)
@@ -107,10 +133,10 @@ class MainWindow:
         height_entry.grid(row=1, column=1, padx=5, pady=2)
         
         # Generator parameters
-        params_frame = ttk.LabelFrame(scrollable_frame, text="Parameters", padding=10)
-        params_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)  # Reduced padx from 10 to 5
+        self.params_frame = ttk.LabelFrame(scrollable_frame, text="Parameters", padding=10)
+        self.params_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)  # Reduced padx from 10 to 5
         
-        self._create_parameter_controls(params_frame)
+        self._create_parameter_controls(self.params_frame)
         
         # Action buttons
         button_frame = ttk.Frame(scrollable_frame)
@@ -397,11 +423,49 @@ class MainWindow:
         self.preview_canvas.delete("all")
         self.current_artwork = None
         self.preview_image = None
+        self.layer_history = []
         self.save_png_btn.config(state=tk.DISABLED)
         self.save_svg_btn.config(state=tk.DISABLED)
         self.status_var.set("Canvas cleared")
         self.progress_var.set(0)
         self.progress_info_var.set("0% - Estimated time: --")
+    
+    def _on_method_changed(self, event=None):
+        """Handle method selection change."""
+        new_method = self.method_var.get()
+        
+        if new_method == self.current_generator_name:
+            return  # No change
+        
+        # Update current generator
+        self.current_generator_name = new_method
+        self.current_generator = self.generators[new_method]
+        
+        # Update description
+        self.method_desc_var.set(self.current_generator.get_description())
+        
+        # Update window title
+        self.root.title(f"Generative Art Studio - {new_method}")
+        
+        # Rebuild parameter panel
+        self._rebuild_parameter_panel()
+        
+        # Update status
+        self.status_var.set(f"Switched to {new_method}")
+    
+    def _rebuild_parameter_panel(self):
+        """Rebuild parameter controls for current generator."""
+        # Clear existing parameter widgets
+        for widget in self.params_frame.winfo_children():
+            widget.destroy()
+        
+        self.param_widgets.clear()
+        
+        # Recreate parameter controls for current generator
+        self._create_parameter_controls(self.params_frame)
+        
+        # Force update
+        self.params_frame.update_idletasks()
     
     def _generate_artwork(self):
         """Generate artwork in background thread."""
@@ -452,6 +516,12 @@ class MainWindow:
                     progress_callback=self._on_progress
                 )
                 self.current_artwork = new_artwork
+                # Reset layer history for new artwork
+                self.layer_history = [self.current_generator_name]
+            
+            # Track layer if in layer mode
+            if previous_artwork:
+                self.layer_history.append(self.current_generator_name)
             
             # Final update
             self.root.after(0, self._on_generation_complete)
@@ -569,14 +639,23 @@ class MainWindow:
         self.save_png_btn.config(state=tk.NORMAL)
         self.save_svg_btn.config(state=tk.NORMAL)
         
-        # Calculate total time
+        # Calculate total time and show layer info
         if self.generation_start_time:
             elapsed = time.time() - self.generation_start_time
             if elapsed < 60:
                 time_str = f"{elapsed:.1f}s"
             else:
                 time_str = f"{int(elapsed / 60)}m {int(elapsed % 60)}s"
-            self.status_var.set(f"Generation complete! (took {time_str})")
+            
+            # Add layer info if multiple layers
+            layer_count = len(self.layer_history)
+            if layer_count > 1:
+                methods = " + ".join(self.layer_history)
+                status = f"Complete! {layer_count} layers ({methods}) - {time_str}"
+            else:
+                status = f"Generation complete! (took {time_str})"
+            
+            self.status_var.set(status)
         else:
             self.status_var.set("Generation complete!")
         
