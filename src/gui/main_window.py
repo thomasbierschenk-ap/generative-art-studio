@@ -677,6 +677,10 @@ class MainWindow:
         if "aborted" in error_msg.lower() or "interrupted" in error_msg.lower():
             self.status_var.set("Generation aborted by user")
             self.progress_info_var.set("Aborted")
+            # Keep save buttons enabled if we have artwork
+            if self.current_artwork:
+                self.save_png_btn.config(state=tk.NORMAL)
+                self.save_svg_btn.config(state=tk.NORMAL)
         else:
             self.status_var.set("Error!")
             self.progress_info_var.set("Error occurred")

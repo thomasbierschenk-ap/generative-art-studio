@@ -4,6 +4,42 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Fixed - User Experience Improvements (2025-10-26)
+
+#### New Feature - Start Angle Parameter
+- **Added `start_angle` parameter** to Mathematical Patterns Generator (0-360 degrees)
+  - Allows rotation of spiral and Lissajous pattern starting positions
+  - Enables more varied compositions and precise pattern orientation
+  - Works seamlessly with symmetry parameter
+  - Perfect for layering patterns at different angles
+  - Default: 0.0 (maintains backward compatibility)
+
+#### Fixed - Save After Abort
+- **Save buttons now stay enabled** after aborting generation
+  - Previously, save buttons were disabled when aborting incomplete generation
+  - Now, if artwork exists, save buttons remain enabled
+  - Allows saving interesting partial generations ("happy accidents")
+  - Provides more flexibility in the creative process
+  - No loss of work when aborting
+
+#### Fixed - Random Walk Wrap Boundary
+- **Eliminated straight lines** when using wrap boundary behavior
+  - Previously created bizarre horizontal/vertical lines from edge to edge
+  - Now breaks path into separate segments when wrapping occurs
+  - No visual connection between segments
+  - Cleaner, more professional-looking wrap behavior
+  - Preserves organic flow of random walk
+- **Technical changes**:
+  - `_handle_boundary()` now returns wrap detection flag
+  - `_generate_walk()` returns list of path segments
+  - Segments created automatically when wrap event detected
+  - Progress updates handle multiple segments correctly
+
+#### Documentation
+- Created comprehensive `FIXES_2025-10-26.md` documenting all three improvements
+- Updated CHANGELOG with detailed fix descriptions
+- All changes maintain backward compatibility
+
 ### Enhanced - Mathematical Patterns Generator (2025-10-26)
 
 #### Bug Fixes

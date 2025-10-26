@@ -139,13 +139,16 @@ class RandomWalkGenerator(BaseGenerator):
         # Generate each walk
         for i in range(params['num_walks']):
             walk_color = self._get_walk_color(i, params)
-            path = self._generate_walk(width, height, params, walk_color, 
-                                       artwork, progress_callback, i)
-            artwork.paths.append(path)
+            path_segments = self._generate_walk(width, height, params, walk_color, 
+                                                artwork, progress_callback, i)
             
-            # Add endpoint node if requested
-            if params['add_nodes'] and len(path.points) > 0:
-                last_point = path.points[-1]
+            # Add all path segments from this walk
+            for path in path_segments:
+                artwork.paths.append(path)
+            
+            # Add endpoint node if requested (use last segment's last point)
+            if params['add_nodes'] and len(path_segments) > 0 and len(path_segments[-1].points) > 0:
+                last_point = path_segments[-1].points[-1]
                 node = CircleElement(
                     center=last_point,
                     radius=params['line_width'] * 2,
@@ -170,15 +173,16 @@ class RandomWalkGenerator(BaseGenerator):
         artwork: ArtworkData,
         progress_callback,
         walk_index: int
-    ) -> PathElement:
-        """Generate a single random walk with progress updates."""
-        points = []
+    ) -> List[PathElement]:
+        """Generate a single random walk with progress updates. Returns list of path segments."""
+        all_paths = []
+        current_points = []
         
         # Determine starting position
         x, y = self._get_start_position(width, height, params['start_position'])
         current_angle = random.uniform(0, 2 * math.pi)
         
-        points.append((x, y))
+        current_points.append((x, y))
         
         # Calculate update frequency (update every N steps for performance)
         update_interval = max(1, params['steps_per_walk'] // 50)
@@ -197,47 +201,68 @@ class RandomWalkGenerator(BaseGenerator):
             new_x = x + dx
             new_y = y + dy
             
-            # Handle boundaries
-            new_x, new_y, should_continue = self._handle_boundary(
+            # Handle boundaries and check if wrapping occurred
+            new_x, new_y, should_continue, wrapped = self._handle_boundary(
                 new_x, new_y, width, height, params['boundary_behavior']
             )
             
             if not should_continue:
                 break
             
+            # If wrapping occurred, start a new path segment
+            if wrapped and params['boundary_behavior'] == 'wrap':
+                # Save current path segment if it has points
+                if len(current_points) > 1:
+                    all_paths.append(PathElement(
+                        points=current_points,
+                        color=color,
+                        width=params['line_width'],
+                        closed=False
+                    ))
+                # Start new segment at wrapped position
+                current_points = [(new_x, new_y)]
+            else:
+                current_points.append((new_x, new_y))
+            
             x, y = new_x, new_y
-            points.append((x, y))
             
             # Send progress updates during walk generation
             if progress_callback and step % update_interval == 0:
-                # Create a temporary path with current points
-                temp_path = PathElement(
-                    points=points.copy(),
-                    color=color,
-                    width=params['line_width'],
-                    closed=False
-                )
+                # Create temporary paths with current segments
+                temp_paths = all_paths.copy()
+                if len(current_points) > 1:
+                    temp_paths.append(PathElement(
+                        points=current_points.copy(),
+                        color=color,
+                        width=params['line_width'],
+                        closed=False
+                    ))
+                
                 # Calculate overall progress
                 walk_progress = walk_index / params['num_walks']
                 step_progress = (step / params['steps_per_walk']) / params['num_walks']
                 total_progress = (walk_progress + step_progress) * 100
                 
-                # Create temporary artwork with current path
+                # Create temporary artwork with current paths
                 temp_artwork = ArtworkData(
                     width=width,
                     height=height,
                     background_color=artwork.background_color,
-                    paths=artwork.paths + [temp_path],
+                    paths=artwork.paths + temp_paths,
                     circles=artwork.circles.copy()
                 )
                 progress_callback(temp_artwork, total_progress)
         
-        return PathElement(
-            points=points,
-            color=color,
-            width=params['line_width'],
-            closed=False
-        )
+        # Add final path segment
+        if len(current_points) > 1:
+            all_paths.append(PathElement(
+                points=current_points,
+                color=color,
+                width=params['line_width'],
+                closed=False
+            ))
+        
+        return all_paths
     
     def _get_start_position(
         self,
@@ -278,22 +303,24 @@ class RandomWalkGenerator(BaseGenerator):
         width: int,
         height: int,
         behavior: str
-    ) -> Tuple[float, float, bool]:
+    ) -> Tuple[float, float, bool, bool]:
         """
         Handle boundary conditions.
         
         Returns:
-            (new_x, new_y, should_continue)
+            (new_x, new_y, should_continue, wrapped)
         """
+        wrapped = False
+        
         if behavior == 'ignore':
-            return (x, y, True)
+            return (x, y, True, False)
         
         should_continue = True
         
         if behavior == 'stop':
             if x < 0 or x > width or y < 0 or y > height:
                 should_continue = False
-            return (x, y, should_continue)
+            return (x, y, should_continue, False)
         
         elif behavior == 'bounce':
             if x < 0:
@@ -305,12 +332,18 @@ class RandomWalkGenerator(BaseGenerator):
                 y = -y
             elif y > height:
                 y = 2 * height - y
+            
+            return (x, y, should_continue, False)
         
         elif behavior == 'wrap':
+            # Check if wrapping occurred
+            if x < 0 or x > width or y < 0 or y > height:
+                wrapped = True
             x = x % width
             y = y % height
+            return (x, y, should_continue, wrapped)
         
-        return (x, y, should_continue)
+        return (x, y, should_continue, False)
     
     def _get_walk_color(self, index: int, params: Dict[str, Any]) -> Tuple[int, int, int]:
         """Determine color for a walk based on color mode."""

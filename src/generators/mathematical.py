@@ -103,6 +103,14 @@ class MathematicalPatternsGenerator(BaseGenerator):
                 'label': 'Completeness',
                 'help': 'How complete the pattern is (0.3 = partial, 1.0 = full)'
             },
+            'start_angle': {
+                'type': 'float',
+                'default': 0.0,
+                'min': 0.0,
+                'max': 360.0,
+                'label': 'Start Angle (degrees)',
+                'help': 'Starting angle for spiral and Lissajous patterns (0-360)'
+            },
             'background_color': {
                 'type': 'color',
                 'default': '#FFFFFF',
@@ -131,6 +139,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
         color_variation = params.get('color_variation', 30.0)
         organic_factor = params.get('organic_factor', 0.0)
         completeness = params.get('completeness', 1.0)
+        start_angle = params.get('start_angle', 0.0)
         bg_color = params.get('background_color', '#FFFFFF')
         
         # Store parameters for helper methods
@@ -139,6 +148,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
         self._color_variation = color_variation / 100.0
         self._organic_factor = organic_factor
         self._completeness = completeness
+        self._start_angle = math.radians(start_angle)  # Convert to radians
         
         # Initialize artwork
         artwork = ArtworkData(
@@ -177,8 +187,8 @@ class MathematicalPatternsGenerator(BaseGenerator):
         actual_density = int(density * self._completeness)
         
         for sym in range(symmetry):
-            # Add organic variation to symmetry
-            angle_offset = (2 * math.pi * sym) / symmetry
+            # Add organic variation to symmetry and apply start angle
+            angle_offset = (2 * math.pi * sym) / symmetry + self._start_angle
             if self._organic_factor > 0:
                 angle_offset += random.uniform(-0.1, 0.1) * self._organic_factor
             
@@ -285,7 +295,7 @@ class MathematicalPatternsGenerator(BaseGenerator):
             path_points = []
             a = 1 + sym * 0.5
             b = complexity
-            delta = (math.pi / 4) * sym
+            delta = (math.pi / 4) * sym + self._start_angle
             
             # Add organic variation to parameters
             if self._organic_factor > 0:
