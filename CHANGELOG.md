@@ -4,6 +4,54 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Enhanced - Mathematical Patterns Generator (2025-10-26)
+
+#### Bug Fixes
+- **Fixed Lissajous straight lines**: Changed `closed=False` to prevent unwanted line connecting end to start
+- **Improved visual quality**: Patterns now look more natural and less "computer-generated"
+
+#### New Parameters - Color System
+- **color_scheme** (replaces use_gradient): 6 color schemes
+  - `gradient`: Smooth hue transition (default)
+  - `monochrome`: Brightness variation only
+  - `complementary`: Alternates between base and opposite colors
+  - `analogous`: Colors within 60° of base hue
+  - `triadic`: Three colors 120° apart
+  - `random`: Random colors within variation range
+- **color_variation** (0-100): Control how much colors vary from base
+  - 0 = uniform color
+  - 100 = maximum variation
+  - Default: 30
+
+#### New Parameters - Organic Variation
+- **organic_factor** (0-1): Add controlled randomness and imperfection
+  - 0 = perfect mathematical patterns (default)
+  - 1 = highly organic, natural-looking
+  - Effects:
+    - Spirals: wobble, radius variation, position jitter
+    - Waves: phase shifts, offset variation, jitter
+    - Lissajous: parameter variation, jitter
+    - Fractal Trees: random angles, 2-4 branches, asymmetric growth
+    - Circle Packing: radius variation, organic clustering
+- **completeness** (0.3-1.0): Control how complete the pattern is
+  - 1.0 = full pattern (default)
+  - 0.3 = only 30% drawn
+  - Creates partial/incomplete aesthetics
+  - For trees: randomly skips branches
+
+#### Technical Improvements
+- **Proper HSV color system**: Accurate RGB ↔ HSV conversion
+- **Enhanced color manipulation**: Independent hue, saturation, value control
+- **Pattern-specific organic variation**: Each pattern type has tailored randomness
+- **Variable branch counts**: Fractal trees now generate 2-4 branches (not fixed at 2)
+- **Backward compatible**: All new parameters have sensible defaults
+
+#### User Experience
+- **More interesting patterns**: Less regular, more organic feel
+- **Greater creative control**: Fine-tune randomness and color schemes
+- **Partial patterns**: Create sketch-like, incomplete aesthetics
+- **Rich color options**: 6 different color distribution schemes
+
 ### Added - Mathematical Patterns Generator (2025-10-25) - Phase 3
 
 #### New Generator Type
