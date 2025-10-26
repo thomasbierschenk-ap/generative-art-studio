@@ -4,6 +4,54 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Added - Pause/Continue Feature (2025-10-26)
+
+#### New Functionality
+- **Replaced Abort with Pause/Continue**: More flexible generation control
+  - Pause generation at any point without losing progress
+  - Save current artwork while paused
+  - Resume generation from where it left off
+  - Create multiple saved versions from a single generation run
+  - Button dynamically changes between "Pause" and "Continue"
+
+#### User Workflow Improvements
+- **Save Intermediate States**: Pause to save interesting partial generations
+- **Create Variations**: Save at 25%, 50%, 75%, and 100% completion
+- **Layer Mode Compatible**: Pause/save works with layered artwork
+- **No Work Lost**: All progress preserved when pausing
+
+#### Technical Implementation
+- **Pause State Management**:
+  - Added `is_paused` flag for pause state tracking
+  - Added `paused_time` to track time spent paused
+  - Added `pause_start_time` for current pause timing
+- **Smart Time Tracking**:
+  - Generation time excludes paused periods
+  - Accurate time estimates when resuming
+  - Completion message shows actual generation time
+- **Thread-Safe Pause Loop**:
+  - Generator thread waits in polling loop when paused
+  - GUI remains responsive via `update_idletasks()`
+  - No complex synchronization needed
+- **UI State Management**:
+  - Save buttons enabled while paused
+  - Save buttons disabled while generating
+  - Status messages reflect pause state
+  - Progress bar freezes/resumes correctly
+
+#### Benefits
+- **More Control**: Stop and examine artwork at any point
+- **Multiple Versions**: Create variations from single run
+- **Happy Accidents**: Save interesting intermediate states
+- **Better Workflow**: Pause to save, then continue adding complexity
+- **Layer Friendly**: Works seamlessly with layer mode
+
+#### Documentation
+- Created comprehensive `PAUSE_CONTINUE_FEATURE.md`
+- Detailed user workflows and examples
+- Technical implementation notes
+- Future enhancement ideas
+
 ### Fixed - User Experience Improvements (2025-10-26)
 
 #### New Feature - Start Angle Parameter

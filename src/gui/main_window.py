@@ -36,8 +36,9 @@ class MainWindow:
         self.current_artwork = None
         self.is_generating = False
         self.preview_image = None
-        self.abort_generation = False
+        self.is_paused = False
         self.generation_start_time = None
+        self.paused_time = 0  # Track time spent paused
         self.layer_history = []  # Track which methods were used
         
         # Set up the window
@@ -162,17 +163,17 @@ class MainWindow:
         )
         self.generate_btn.pack(fill=tk.X, pady=2)
         
-        # Abort and Clear buttons in a row
+        # Pause/Continue and Clear buttons in a row
         control_row = ttk.Frame(button_frame)
         control_row.pack(fill=tk.X, pady=2)
         
-        self.abort_btn = ttk.Button(
+        self.pause_btn = ttk.Button(
             control_row,
-            text="Abort",
-            command=self._on_abort,
+            text="Pause",
+            command=self._on_pause_continue,
             state=tk.DISABLED
         )
-        self.abort_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
+        self.pause_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
         
         self.clear_btn = ttk.Button(
             control_row,
@@ -395,11 +396,12 @@ class MainWindow:
             return
         
         self.is_generating = True
-        self.abort_generation = False
+        self.is_paused = False
+        self.paused_time = 0
         self.generation_start_time = time.time()
         
         self.generate_btn.config(state=tk.DISABLED)
-        self.abort_btn.config(state=tk.NORMAL)
+        self.pause_btn.config(state=tk.NORMAL, text="Pause")
         self.save_png_btn.config(state=tk.DISABLED)
         self.save_svg_btn.config(state=tk.DISABLED)
         self.status_var.set("Generating...")
@@ -411,12 +413,28 @@ class MainWindow:
         thread.daemon = True
         thread.start()
     
-    def _on_abort(self):
-        """Handle abort button click."""
+    def _on_pause_continue(self):
+        """Handle pause/continue button click."""
         if self.is_generating:
-            self.abort_generation = True
-            self.status_var.set("Aborting...")
-            self.abort_btn.config(state=tk.DISABLED)
+            if self.is_paused:
+                # Continue generation
+                self.is_paused = False
+                self.pause_start_time = None
+                self.pause_btn.config(text="Pause")
+                self.status_var.set("Generating...")
+                # Disable save buttons while generating
+                self.save_png_btn.config(state=tk.DISABLED)
+                self.save_svg_btn.config(state=tk.DISABLED)
+            else:
+                # Pause generation
+                self.is_paused = True
+                self.pause_start_time = time.time()
+                self.pause_btn.config(text="Continue")
+                self.status_var.set("Paused - You can save the current artwork")
+                # Enable save buttons while paused
+                if self.current_artwork:
+                    self.save_png_btn.config(state=tk.NORMAL)
+                    self.save_svg_btn.config(state=tk.NORMAL)
     
     def _on_clear(self):
         """Handle clear canvas button click."""
@@ -534,13 +552,20 @@ class MainWindow:
     
     def _on_progress(self, artwork, progress):
         """Handle progress updates from generator."""
-        # Check if abort was requested
-        if self.abort_generation:
-            raise InterruptedError("Generation aborted by user")
+        # Handle pause - wait until resumed
+        while self.is_paused and self.is_generating:
+            time.sleep(0.1)
+            # Allow GUI to process events while paused
+            self.root.update_idletasks()
         
-        # Calculate estimated time remaining
+        # Update paused time tracking when resuming
+        if hasattr(self, 'pause_start_time') and self.pause_start_time:
+            self.paused_time += time.time() - self.pause_start_time
+            self.pause_start_time = None
+        
+        # Calculate estimated time remaining (excluding paused time)
         if self.generation_start_time and progress > 0:
-            elapsed = time.time() - self.generation_start_time
+            elapsed = time.time() - self.generation_start_time - self.paused_time
             total_estimated = elapsed / (progress / 100.0)
             remaining = total_estimated - elapsed
             
@@ -632,16 +657,16 @@ class MainWindow:
     def _on_generation_complete(self):
         """Handle successful generation completion."""
         self.is_generating = False
-        self.abort_generation = False
+        self.is_paused = False
         
         self.generate_btn.config(state=tk.NORMAL)
-        self.abort_btn.config(state=tk.DISABLED)
+        self.pause_btn.config(state=tk.DISABLED, text="Pause")
         self.save_png_btn.config(state=tk.NORMAL)
         self.save_svg_btn.config(state=tk.NORMAL)
         
-        # Calculate total time and show layer info
+        # Calculate total time and show layer info (excluding paused time)
         if self.generation_start_time:
-            elapsed = time.time() - self.generation_start_time
+            elapsed = time.time() - self.generation_start_time - self.paused_time
             if elapsed < 60:
                 time_str = f"{elapsed:.1f}s"
             else:
@@ -668,23 +693,18 @@ class MainWindow:
     def _on_generation_error(self, error_msg):
         """Handle generation error."""
         self.is_generating = False
-        self.abort_generation = False
+        self.is_paused = False
         
         self.generate_btn.config(state=tk.NORMAL)
-        self.abort_btn.config(state=tk.DISABLED)
+        self.pause_btn.config(state=tk.DISABLED, text="Pause")
         
-        # Check if it was an abort
-        if "aborted" in error_msg.lower() or "interrupted" in error_msg.lower():
-            self.status_var.set("Generation aborted by user")
-            self.progress_info_var.set("Aborted")
-            # Keep save buttons enabled if we have artwork
-            if self.current_artwork:
-                self.save_png_btn.config(state=tk.NORMAL)
-                self.save_svg_btn.config(state=tk.NORMAL)
-        else:
-            self.status_var.set("Error!")
-            self.progress_info_var.set("Error occurred")
-            messagebox.showerror("Generation Error", f"Failed to generate artwork:\n{error_msg}")
+        self.status_var.set("Error!")
+        self.progress_info_var.set("Error occurred")
+        # Keep save buttons enabled if we have artwork
+        if self.current_artwork:
+            self.save_png_btn.config(state=tk.NORMAL)
+            self.save_svg_btn.config(state=tk.NORMAL)
+        messagebox.showerror("Generation Error", f"Failed to generate artwork:\n{error_msg}")
     
     def _on_save(self, format_type):
         """Handle save button click."""
