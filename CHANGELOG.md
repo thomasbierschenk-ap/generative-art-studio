@@ -4,6 +4,22 @@ All notable changes to the Generative Art Studio project.
 
 ## [Unreleased]
 
+### Fixed - Pause Button Save Buttons (2025-10-26)
+
+#### Issue
+- Save buttons remained disabled/greyed out when pausing generation
+- Users couldn't save in-progress artwork while paused
+
+#### Solution
+- Removed conditional check that was preventing save buttons from enabling
+- Save buttons now **always enabled when paused** (since artwork always exists during generation)
+- Status message confirms: "Paused - You can save the current artwork"
+
+#### Impact
+- Users can now save intermediate artwork at any point during generation
+- Better workflow for capturing interesting partial generations
+- Consistent with the pause/continue feature's purpose
+
 ### Added - Pause/Continue Feature (2025-10-26)
 
 #### New Functionality

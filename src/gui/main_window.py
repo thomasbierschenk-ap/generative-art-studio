@@ -431,10 +431,9 @@ class MainWindow:
                 self.pause_start_time = time.time()
                 self.pause_btn.config(text="Continue")
                 self.status_var.set("Paused - You can save the current artwork")
-                # Enable save buttons while paused
-                if self.current_artwork:
-                    self.save_png_btn.config(state=tk.NORMAL)
-                    self.save_svg_btn.config(state=tk.NORMAL)
+                # Enable save buttons while paused (there's always artwork during generation)
+                self.save_png_btn.config(state=tk.NORMAL)
+                self.save_svg_btn.config(state=tk.NORMAL)
     
     def _on_clear(self):
         """Handle clear canvas button click."""
